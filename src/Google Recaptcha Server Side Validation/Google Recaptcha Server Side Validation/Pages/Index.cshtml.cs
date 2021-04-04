@@ -3,20 +3,21 @@
     using GoogleRecaptchaServerSideValidation.Models;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.RazorPages;
-    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
     using Services;
     using System.Threading.Tasks;
 
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
         private readonly IGRecaptchaService _gRecaptchaService;
+        private readonly GoogleRecaptchaConfiguration _googleRecaptchaConfiguration;
 
-        public IndexModel(ILogger<IndexModel> logger,
+        public IndexModel(
+            IOptions<GoogleRecaptchaConfiguration> options,
             IGRecaptchaService gRecaptchaService)
         {
-            _logger = logger;
             _gRecaptchaService = gRecaptchaService;
+            _googleRecaptchaConfiguration = options.Value;
         }
 
         [BindProperty]
@@ -34,19 +35,18 @@
 
         public void OnGet()
         {
-
+            SiteKey = _googleRecaptchaConfiguration.SiteKey;
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-
             var requestModel = new GRecaptchaRequestModel();
             requestModel.Token = Token;
             requestModel.RemoteIp = HttpContext.Connection.RemoteIpAddress.ToString();
 
             var result = await _gRecaptchaService.Validate(requestModel);
 
-            if(result)
+            if(!result)
             {
                 Message = "Captcha Verification Successful";
             }
@@ -56,7 +56,7 @@
             }
 
 
-            return RedirectToPage("Index");
+            return Page();
         }
     }
 }

@@ -39,8 +39,15 @@
 
                 return captchaVerification.Success;
             }
+            catch (HttpRequestException hre)
+            {
+                //here you can invoke logger - depends on your needs
+
+                return false;
+            }
             catch (Exception ex)
             {
+                //Invoke logger
                 _logger.LogError(ex.Message);
 
                 return false;

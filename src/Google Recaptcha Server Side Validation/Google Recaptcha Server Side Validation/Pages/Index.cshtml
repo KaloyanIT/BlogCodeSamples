@@ -1,17 +1,24 @@
 ﻿@page
 @model IndexModel
+
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Google ReCAPTCHA";
+    //Here I am building the url for referencing a script for reCAPTCHA
+    string url = "https://www.google.com/recaptcha/api.js?render=" + Model.SiteKey;
 }
+
+<script src="@url"></script>
 
 <div class="container">
     <h1 class="display-4">Contact Form</h1>
+
     @if (!string.IsNullOrEmpty(Model.Message))
     {
-        <div class="alert-info">
+        <div class="alert alert-info" role="alert">
             @Model.Message
         </div>
     }
+
     <form method="post">
         <div class="form-group">
             <label for="exampleInputEmail1">Email address</label>
@@ -21,6 +28,26 @@
             <label for="exampleInputPassword1">Text</label>
             <textarea type="text" asp-for="Text" class="form-control" id="exampleInputPassword1" placeholder="Text"></textarea>
         </div>
+        <input type="hidden" asp-for="Token" class="token-input" />
         <button type="submit" class="btn btn-primary">Send</button>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+
+        $('button').on('click', onClick);
+
+        function onClick(e) {
+            //We need to prevent the form from submitting before we become the token from reCAPTCHA
+            e.preventDefault();
+            grecaptcha.ready(function () {
+                grecaptcha.execute('@Model.SiteKey', { action: 'submit' }).then(function (token) {
+                    $('.token-input').val(token);
+                    $('form').submit();
+                });
+            });
+        }
+
+    </script>
+}
